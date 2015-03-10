@@ -19,6 +19,7 @@ public class Main extends Activity implements View.OnClickListener {
     private ProgressBar progressBar;
     private TextView statusText;
     private int completed;
+    //Zhou Xu Tong is Silly
 
     private class WorkerTask extends AsyncTask<Object, String, Boolean> {
         // Initialize the progress bar and the status TextView
