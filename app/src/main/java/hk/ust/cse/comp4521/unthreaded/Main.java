@@ -24,8 +24,10 @@ import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -52,7 +54,6 @@ public class Main extends Activity implements View.OnClickListener {
     private TextView statusText;
     private int completed;
     private int silly = 3;
-    //Zhou Xu Tong is Silly
 
     private static final String serverurl = "http://175.159.123.22/task_manager/v1";
 
@@ -167,16 +168,15 @@ public class Main extends Activity implements View.OnClickListener {
         @Override
         protected Integer doInBackground(String... params) {
 
+
+            NameValuePair pair1 = new BasicNameValuePair("name", "Peng Rui");
+            NameValuePair pair2 = new BasicNameValuePair("email", "123456789@qq.com");
+            NameValuePair pair3 = new BasicNameValuePair("password", "ddd");
+            List<NameValuePair> pairList = new ArrayList<NameValuePair>();
+            pairList.add(pair1);
+            pairList.add(pair2);
+            pairList.add(pair3);
             try {
-                NameValuePair pair1 = new BasicNameValuePair("name", "Peng Rui");
-                NameValuePair pair2 = new BasicNameValuePair("email", "123456789@qq.com");
-                NameValuePair pair3 = new BasicNameValuePair("password", "ddd");
-
-                List<NameValuePair> pairList = new ArrayList<NameValuePair>();
-                pairList.add(pair1);
-                pairList.add(pair2);
-                pairList.add(pair3);
-
                 HttpEntity requestHttpEntity = new UrlEncodedFormEntity(pairList);
                 // URL使用基本URL即可，其中不需要加参数
                 HttpPost httpPost = new HttpPost(serverurl + "/register");
@@ -186,39 +186,86 @@ public class Main extends Activity implements View.OnClickListener {
                 HttpClient httpClient = new DefaultHttpClient();
                 // 发送请求
                 HttpResponse response = httpClient.execute(httpPost);
-
                 StatusLine a = response.getStatusLine();
                 Log.i("IMPORTANT", "POST request: Status code = " + a.getStatusCode());
-
+                showResult(response);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
+
             // 使用GET方法发送请求,需要把参数加在URL后面，用？连接，参数之间用&分隔
             String url = serverurl + "/tasks";
-
             // 生成请求对象
             HttpGet httpGet = new HttpGet(url);
             HttpClient httpClient = new DefaultHttpClient();
-
             //添加header信息
             httpGet.addHeader("Authorization","91c9bfa10ff21db168154fe3ab064b95");
-
             // 发送请求
-            try
-            {
+            try{
                 HttpResponse response = httpClient.execute(httpGet);
                 StatusLine a = response.getStatusLine();
                 Log.i("IMPORTANT", "GET request: Status code = " + a.getStatusCode());
+                showResult(response);
+            }catch (Exception e){
+                e.printStackTrace();
             }
-            catch (Exception e)
-            {
+
+
+            //创建一个http客户端
+            HttpClient client = new DefaultHttpClient();
+            //创建一个PUT请求
+            HttpPut httpPut = new HttpPut(serverurl + "/tasks/2");
+            httpPut.addHeader("Authorization","91c9bfa10ff21db168154fe3ab064b95");
+            //组装数据放到HttpEntity中发送到服务器
+            List<NameValuePair> dataList = new ArrayList<NameValuePair>();
+            dataList.add(new BasicNameValuePair("task", "Test Task 100"));
+            dataList.add(new BasicNameValuePair("status", "0"));
+            try {
+                HttpEntity entity = new UrlEncodedFormEntity(dataList);
+                httpPut.setEntity(entity);
+                //向服务器发送PUT请求并获取服务器返回的结果，可能是修改成功，或者失败等信息
+                HttpResponse response = client.execute(httpPut);
+                StatusLine a = response.getStatusLine();
+                Log.i("IMPORTANT", "PUT request: Status code = " + a.getStatusCode());
+                showResult(response);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+
+
+            HttpClient client2 = new DefaultHttpClient();
+            HttpDelete httpDelete = new HttpDelete(serverurl + "/tasks/4");
+            httpDelete.addHeader("Authorization","91c9bfa10ff21db168154fe3ab064b95");
+            try {
+                HttpResponse response = client2.execute(httpDelete);
+                StatusLine statusLine = response.getStatusLine();
+                Log.i("IMPORTANT", "DELETE request: Status code = " + statusLine.getStatusCode());
+                showResult(response);
+            }catch(Exception e){
                 e.printStackTrace();
             }
 
             return 0;
         }
 
+    }
+
+    private void showResult(HttpResponse response){
+        try {
+            HttpEntity receivedEntity = response.getEntity();
+            InputStream receivedStream = receivedEntity.getContent();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    receivedStream));
+            String result = "";
+            String line = "";
+            while (null != (line = reader.readLine())) {
+                result += line;
+            }
+            Log.i("IMPORTANT", "Content = " + result);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 }
