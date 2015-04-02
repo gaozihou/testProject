@@ -1,16 +1,48 @@
 package hk.ust.cse.comp4521.unthreaded;
 
 import android.app.Activity;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.xml.transform.Result;
 
@@ -22,7 +54,10 @@ public class Main extends Activity implements View.OnClickListener {
     private int silly = 3;
     //Zhou Xu Tong is Silly
 
+    private static final String serverurl = "http://175.159.123.22/task_manager/v1/register";
+
     private class WorkerTask extends AsyncTask<Object, String, Boolean> {
+        // Initialize the progress bar and the status TextView
         // Initialize the progress bar and the status TextView
         @Override
         protected void onPreExecute() {
@@ -65,45 +100,6 @@ public class Main extends Activity implements View.OnClickListener {
     }
 
     WorkerTask worker;
-   // private Handler handler;
-/*
-    private Runnable worker = new Runnable() {
-        public void run() {
-            int l;
-            // Initialize the progress bar and the status TextView
-            completed = 0;
-            // we want to modify the progress bar so we need to do it from the UI thread
-            // how can we make sure the code runs in the UI thread? use the handler!
-            handler.post(new Runnable() {
-                public void run() {
-                    // Here the worker thread uses the post method to initialize the progress bar.
-                    // Finish this method by yourself.
-                    progressBar.setProgress(completed);
-                    statusText.setText(String.format("Completed %d", completed));
-                }
-            });
-            // Here the worker thread do the loop and update the progress bar periodically
-            // Similarly, it uses the handler.post method to update the progress bar
-            // Finish this part by yourself.
-            for (int i = 0; i< 100; ++i) {
-                for (int j = 0; j < 5000; ++j) {
-                    for (int k = 0; k < 5000; ++k) {
-                        l = i * j * k;
-                    }
-                }
-                completed += 1;
-                handler.post(new Runnable() {
-                    public void run() {
-                        // Here the worker thread uses the post method to initialize the progress bar.
-                        // Finish this method by yourself.
-                        progressBar.setProgress(completed);
-                        statusText.setText(String.format("Completed %d", completed));
-                    }
-                });
-            }
-        }
-    };
-    */
 
     /**
      * Called when the activity is first created.
@@ -125,6 +121,25 @@ public class Main extends Activity implements View.OnClickListener {
         startButton.setOnClickListener(this);
         Button resetButton = (Button) findViewById(R.id.reset_button);
         resetButton.setOnClickListener(this);
+
+        if (isOnline()) {
+            new AsyncHttpPost().execute(serverurl);
+        }else{
+            Toast.makeText(this, getString(R.string.notOnline), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private boolean isOnline() {
+
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     public void onClick(View source) {
@@ -146,4 +161,46 @@ public class Main extends Activity implements View.OnClickListener {
             completed = 0;
         }
     }
+
+    public class AsyncHttpPost extends AsyncTask<String, Void, Integer> {
+
+        @Override
+        protected Integer doInBackground(String... params) {
+
+            try {
+                NameValuePair pair1 = new BasicNameValuePair("name", "Peng Rui");
+                NameValuePair pair2 = new BasicNameValuePair("email", "123456789@qq.com");
+                NameValuePair pair3 = new BasicNameValuePair("password", "ddd");
+
+                List<NameValuePair> pairList = new ArrayList<NameValuePair>();
+                pairList.add(pair1);
+                pairList.add(pair2);
+                pairList.add(pair3);
+
+                HttpEntity requestHttpEntity = new UrlEncodedFormEntity(pairList);
+                // URL使用基本URL即可，其中不需要加参数
+                HttpPost httpPost = new HttpPost(serverurl);
+                // 将请求体内容加入请求中
+                httpPost.setEntity(requestHttpEntity);
+                // 需要客户端对象来发送请求
+                HttpClient httpClient = new DefaultHttpClient();
+                // 发送请求
+                HttpResponse response = httpClient.execute(httpPost);
+
+                StatusLine a = response.getStatusLine();
+                Log.i("IMPORTANT", "POST request: Status code = " + a.getStatusCode());
+
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+
+            return 0;
+        }
+
+    }
+
 }
