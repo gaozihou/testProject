@@ -54,7 +54,7 @@ public class Main extends Activity implements View.OnClickListener {
     private int silly = 3;
     //Zhou Xu Tong is Silly
 
-    private static final String serverurl = "http://175.159.123.22/task_manager/v1/register";
+    private static final String serverurl = "http://175.159.123.22/task_manager/v1";
 
     private class WorkerTask extends AsyncTask<Object, String, Boolean> {
         // Initialize the progress bar and the status TextView
@@ -179,7 +179,7 @@ public class Main extends Activity implements View.OnClickListener {
 
                 HttpEntity requestHttpEntity = new UrlEncodedFormEntity(pairList);
                 // URL使用基本URL即可，其中不需要加参数
-                HttpPost httpPost = new HttpPost(serverurl);
+                HttpPost httpPost = new HttpPost(serverurl + "/register");
                 // 将请求体内容加入请求中
                 httpPost.setEntity(requestHttpEntity);
                 // 需要客户端对象来发送请求
@@ -190,13 +190,31 @@ public class Main extends Activity implements View.OnClickListener {
                 StatusLine a = response.getStatusLine();
                 Log.i("IMPORTANT", "POST request: Status code = " + a.getStatusCode());
 
-
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
+            // 使用GET方法发送请求,需要把参数加在URL后面，用？连接，参数之间用&分隔
+            String url = serverurl + "/tasks";
 
+            // 生成请求对象
+            HttpGet httpGet = new HttpGet(url);
+            HttpClient httpClient = new DefaultHttpClient();
+
+            //添加header信息
+            httpGet.addHeader("Authorization","91c9bfa10ff21db168154fe3ab064b95");
+
+            // 发送请求
+            try
+            {
+                HttpResponse response = httpClient.execute(httpGet);
+                StatusLine a = response.getStatusLine();
+                Log.i("IMPORTANT", "GET request: Status code = " + a.getStatusCode());
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
 
             return 0;
         }
