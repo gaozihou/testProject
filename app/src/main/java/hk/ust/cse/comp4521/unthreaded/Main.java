@@ -33,6 +33,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -53,11 +55,16 @@ public class Main extends Activity implements View.OnClickListener {
     private ProgressBar progressBar;
     private TextView statusText;
     private int completed;
-    private int silly = 3;
+    WorkerTask worker;
 
     private static final String serverurl = "http://gaozihou.ddns.net/task_manager/v1";
-
-    WorkerTask worker;
+    List<TaskInfo> taskInfoArrayList;
+    public class TaskInfo {
+        int id;
+        String task;
+        String status;
+        String createdAt;
+    }
 
     /**
      * Called when the activity is first created.
@@ -220,8 +227,26 @@ public class Main extends Activity implements View.OnClickListener {
                 result += line;
             }
             Log.i("IMPORTANT", "Content = " + result);
+            jsonAnalysis(result);
         }catch(Exception e){
             e.printStackTrace();
+        }
+    }
+
+    private void jsonAnalysis(String input) throws JSONException {
+        JSONObject obj = new JSONObject(input);
+        String hehe1 = obj.getString("error");
+        Log.i("IMPORTANT::::: ",hehe1);
+        if(!obj.isNull("message")) {
+            String hehe2 = obj.getString("message");
+            Log.i("IMPORTANT::::: ", hehe2);
+        }
+        if(!obj.isNull("tasks")){
+            JSONObject taskObj = obj.getJSONObject("tasks");
+            taskInfoArrayList = new ArrayList<TaskInfo>();
+
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            Gson gson = gsonBuilder.create();
         }
     }
 
