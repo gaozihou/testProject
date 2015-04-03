@@ -55,50 +55,7 @@ public class Main extends Activity implements View.OnClickListener {
     private int completed;
     private int silly = 3;
 
-    private static final String serverurl = "http://175.159.123.22/task_manager/v1";
-
-    private class WorkerTask extends AsyncTask<Object, String, Boolean> {
-        // Initialize the progress bar and the status TextView
-        // Initialize the progress bar and the status TextView
-        @Override
-        protected void onPreExecute() {
-            completed = 0;
-            // This will result in a call to onProgressUpdate()
-            publishProgress();
-        }
-        @Override
-        // This method updates the main UI, refreshing the progress bar and TextView.
-        // Finish this method by yourself.
-        protected void onProgressUpdate(String... values) {
-            progressBar.setProgress(completed);
-            statusText.setText(String.format("Completed %d", completed));
-        }
-        // Do the main computation in the background and update the UI using publishProgress()
-        // Finish this method by yourself.
-        @Override
-        protected Boolean doInBackground(Object... params) {
-
-            int l;
-            for (int i = 0; i< 100; ++i) {
-                for (int j = 0; j < 5000; ++j) {
-                    for (int k = 0; k < 5000; ++k) {
-                        l = i * j * k;
-                        if (isCancelled()) break;
-                    }
-                    if (isCancelled()) break;
-                }
-                completed += 1;
-                publishProgress();
-                if (isCancelled()) break;
-                if (completed == 100) break;
-            }
-            return null;
-        }
-
-        protected void onPostExecute(Boolean result){
-            statusText.setText(String.format("Completed!!!!!"));
-        }
-    }
+    private static final String serverurl = "http://gaozihou.ddns.net/task_manager/v1";
 
     WorkerTask worker;
 
@@ -112,12 +69,12 @@ public class Main extends Activity implements View.OnClickListener {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-// Get handles for the progress bar and status text TextView
+        // Get handles for the progress bar and status text TextView
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         statusText = (TextView) findViewById(R.id.status_text);
-// Set the maximum value that the progress bar will display
+        // Set the maximum value that the progress bar will display
         progressBar.setMax(100);
-// Declare the listeners for the two buttons
+        // Declare the listeners for the two buttons
         Button startButton = (Button) findViewById(R.id.start_button);
         startButton.setOnClickListener(this);
         Button resetButton = (Button) findViewById(R.id.reset_button);
@@ -144,7 +101,7 @@ public class Main extends Activity implements View.OnClickListener {
     }
 
     public void onClick(View source) {
-// Start button is clicked
+        // Start button is clicked
         if (source.getId() == R.id.start_button) {
             if(worker != null){
                 worker.cancel(false);
@@ -154,7 +111,7 @@ public class Main extends Activity implements View.OnClickListener {
             //Thread workerthread = new Thread(worker);
             //workerthread.start();
         }
-// Reset button is clicked
+        // Reset button is clicked
         else if (source.getId() == R.id.reset_button) {
             worker.cancel(false);
             progressBar.setProgress(0);
@@ -265,6 +222,49 @@ public class Main extends Activity implements View.OnClickListener {
             Log.i("IMPORTANT", "Content = " + result);
         }catch(Exception e){
             e.printStackTrace();
+        }
+    }
+
+    private class WorkerTask extends AsyncTask<Object, String, Boolean> {
+        // Initialize the progress bar and the status TextView
+        // Initialize the progress bar and the status TextView
+        @Override
+        protected void onPreExecute() {
+            completed = 0;
+            // This will result in a call to onProgressUpdate()
+            publishProgress();
+        }
+        @Override
+        // This method updates the main UI, refreshing the progress bar and TextView.
+        // Finish this method by yourself.
+        protected void onProgressUpdate(String... values) {
+            progressBar.setProgress(completed);
+            statusText.setText(String.format("Completed %d", completed));
+        }
+        // Do the main computation in the background and update the UI using publishProgress()
+        // Finish this method by yourself.
+        @Override
+        protected Boolean doInBackground(Object... params) {
+
+            int l;
+            for (int i = 0; i< 100; ++i) {
+                for (int j = 0; j < 5000; ++j) {
+                    for (int k = 0; k < 5000; ++k) {
+                        l = i * j * k;
+                        if (isCancelled()) break;
+                    }
+                    if (isCancelled()) break;
+                }
+                completed += 1;
+                publishProgress();
+                if (isCancelled()) break;
+                if (completed == 100) break;
+            }
+            return null;
+        }
+
+        protected void onPostExecute(Boolean result){
+            statusText.setText(String.format("Completed!!!!!"));
         }
     }
 
