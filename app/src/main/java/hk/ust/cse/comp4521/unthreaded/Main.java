@@ -244,9 +244,10 @@ public class Main extends Activity implements View.OnClickListener {
         if(!obj.isNull("tasks")){
             JSONObject taskObj = obj.getJSONObject("tasks");
             taskInfoArrayList = new ArrayList<TaskInfo>();
-
             GsonBuilder gsonBuilder = new GsonBuilder();
             Gson gson = gsonBuilder.create();
+            taskInfoArrayList = Arrays.asList(gson.fromJson(taskObj.toString(), TaskInfo[].class));
+            Log.i("IMPORTANT::::: ", taskInfoArrayList.get(0).task);
         }
     }
 
