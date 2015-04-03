@@ -31,6 +31,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import com.google.gson.Gson;
@@ -50,12 +51,13 @@ import java.util.List;
 
 import javax.xml.transform.Result;
 
-
 public class Main extends Activity implements View.OnClickListener {
+
     private ProgressBar progressBar;
     private TextView statusText;
     private int completed;
     WorkerTask worker;
+    private TextView showMessage;
 
     private static final String serverurl = "http://gaozihou.ddns.net/task_manager/v1";
     List<TaskInfo> taskInfoArrayList;
@@ -87,8 +89,11 @@ public class Main extends Activity implements View.OnClickListener {
         Button resetButton = (Button) findViewById(R.id.reset_button);
         resetButton.setOnClickListener(this);
 
+        showMessage = (TextView)findViewById(R.id.showMessage);
+        showMessage.setText("Not Applicable");
+
         if (isOnline()) {
-            new AsyncHttpPost().execute(serverurl);
+            new AsyncHttpServer().execute(serverurl);
         }else{
             Toast.makeText(this, getString(R.string.notOnline), Toast.LENGTH_LONG).show();
         }
@@ -127,11 +132,14 @@ public class Main extends Activity implements View.OnClickListener {
         }
     }
 
-    public class AsyncHttpPost extends AsyncTask<String, Void, Integer> {
+    String tempMessage = "";
+
+    public class AsyncHttpServer extends AsyncTask<String, Void, Integer> {
 
         @Override
         protected Integer doInBackground(String... params) {
 
+            tempMessage = "";
 
             NameValuePair pair1 = new BasicNameValuePair("name", "Peng Rui");
             NameValuePair pair2 = new BasicNameValuePair("email", "123456789@qq.com");
@@ -213,6 +221,10 @@ public class Main extends Activity implements View.OnClickListener {
             return 0;
         }
 
+        protected void onPostExecute(Integer result){
+            showMessage.setText(tempMessage);
+        }
+
     }
 
     private void showResult(HttpResponse response){
@@ -227,6 +239,7 @@ public class Main extends Activity implements View.OnClickListener {
                 result += line;
             }
             Log.i("IMPORTANT", "Content = " + result);
+            tempMessage = tempMessage + "\n" + result;
             jsonAnalysis(result);
         }catch(Exception e){
             e.printStackTrace();
@@ -242,12 +255,13 @@ public class Main extends Activity implements View.OnClickListener {
             Log.i("IMPORTANT::::: ", hehe2);
         }
         if(!obj.isNull("tasks")){
-            JSONObject taskObj = obj.getJSONObject("tasks");
+            JSONArray taskArray = obj.getJSONArray("tasks");
             taskInfoArrayList = new ArrayList<TaskInfo>();
             GsonBuilder gsonBuilder = new GsonBuilder();
             Gson gson = gsonBuilder.create();
-            taskInfoArrayList = Arrays.asList(gson.fromJson(taskObj.toString(), TaskInfo[].class));
-            Log.i("IMPORTANT::::: ", taskInfoArrayList.get(0).task);
+            taskInfoArrayList = Arrays.asList(gson.fromJson(taskArray.toString(), TaskInfo[].class));
+            Log.i("IMPORTANT:::::length: ", ""+taskInfoArrayList.size());
+            Log.i("IMPORTANT:::::name: ", taskInfoArrayList.get(0).task);
         }
     }
 
