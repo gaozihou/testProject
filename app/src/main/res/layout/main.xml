@@ -3,7 +3,8 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:background="#ff03dec0">
+    android:background="#ff03dec0"
+    android:id="@+id/hehe">
 
     <TextView
         android:id="@+id/status_text"
@@ -47,6 +48,18 @@
             android:layout_marginTop="20dip"
             android:padding="14dip"
             android:text="Reset"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upload"
+            android:id="@+id/upload" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="N/A"
+            android:id="@+id/select" />
     </LinearLayout>
 
     <LinearLayout
@@ -61,5 +74,19 @@
             android:layout_height="wrap_content"
             android:text="N/A"
             android:id="@+id/showMessage" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/layout100">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/image"
+            android:layout_gravity="center_horizontal" />
     </LinearLayout>
 </LinearLayout>
