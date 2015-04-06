@@ -1,31 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical"
+    android:scrollbars="vertical"
     android:background="#ff03dec0"
-    android:id="@+id/hehe">
+    android:clickable="false">
 
-    <TextView
-        android:id="@+id/status_text"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingTop="20dip"
-        android:text="Please click the button"/>
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="left"
-        android:paddingTop="20dip"
-        android:text="Progress:"/>
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="40dip"
-        android:indeterminate="false"
-        android:padding="10dip"/>
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:background="#ff03dec0"
+        android:id="@+id/hehe">
+
+        <TextView
+            android:id="@+id/status_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="20dip"
+            android:text="Please click the button"/>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:paddingTop="20dip"
+            android:text="Progress:"/>
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="40dip"
+            android:indeterminate="false"
+            android:padding="10dip"/>
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -111,3 +118,4 @@
     </LinearLayout>
 
 </LinearLayout>
+</ScrollView>

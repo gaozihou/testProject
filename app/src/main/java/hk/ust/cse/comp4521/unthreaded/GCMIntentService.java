@@ -100,15 +100,11 @@ public class GCMIntentService extends IntentService {
     }
 
     public class AsyncVibration extends AsyncTask<String, Void, Integer> {
-
         @Override
         protected Integer doInBackground(String... params) {
             Vibrator vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(new long[]{0, 200, 200, 200}, -1);
             return null;
         }
-
     }
-
-
 }

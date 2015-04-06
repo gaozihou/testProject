@@ -17,6 +17,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,11 +30,13 @@ public class RegisterApp extends AsyncTask<Void, Void, String> {
     String SENDER_ID = "163181979124";
     String regid = null;
     private int appVersion;
+    String userKey = null;
 
-    public RegisterApp(Context ctx, GoogleCloudMessaging gcm, int appVersion){
+    public RegisterApp(String registrationID, Context ctx, GoogleCloudMessaging gcm, int appVersion){
         this.ctx = ctx;
         this.gcm = gcm;
         this.appVersion = appVersion;
+        userKey = registrationID;
     }
 
     @Override
@@ -54,7 +57,7 @@ public class RegisterApp extends AsyncTask<Void, Void, String> {
             // so it can use GCM/HTTP or CCS to send messages to your app.
             // The request to your server should be authenticated if your app
             // is using accounts.
-            sendRegistrationIdToBackend();
+            msg = sendRegistrationIdToBackend();
 
             // For this demo: we don't need to send it because the device
             // will send upstream messages to a server that echo back the
@@ -88,32 +91,36 @@ public class RegisterApp extends AsyncTask<Void, Void, String> {
 
     }
 */
-    private void sendRegistrationIdToBackend() {
+    private String sendRegistrationIdToBackend() {
         NameValuePair pair1 = new BasicNameValuePair("regId", regid);
         List<NameValuePair> pairList = new ArrayList<>();
         pairList.add(pair1);
+        String result = "";
         try {
             HttpEntity requestHttpEntity = new UrlEncodedFormEntity(pairList);
             // URL使用基本URL即可，其中不需要加参数
             HttpPost httpPost = new HttpPost("http://gaozihou.ddns.net/task_manager/v1/registerGCM");
+            httpPost.addHeader("Authorization",userKey);
+            //httpPost.addHeader("Authorization","91c9bfa10ff21db168154fe3ab064b95");
             // 将请求体内容加入请求中
             httpPost.setEntity(requestHttpEntity);
             // 需要客户端对象来发送请求
             HttpClient httpClient = new DefaultHttpClient();
             // 发送请求
             HttpResponse response = httpClient.execute(httpPost);
-            StatusLine a = response.getStatusLine();
-            Log.i("IMPORTANT", "POST request: Status code = " + a.getStatusCode());
+            JSONObject obj = Main.response2obj(response);
+            result = obj.getString("error");
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return result;
     }
 
 
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
-        Toast.makeText(ctx, "Registration Completed. Now you can see the notifications", Toast.LENGTH_SHORT).show();
+        Toast.makeText(ctx, result, Toast.LENGTH_SHORT).show();
         Log.v(TAG, result);
     }
 }

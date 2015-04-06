@@ -165,7 +165,7 @@ public class Main extends Activity implements View.OnClickListener {
                 if (checkPlayServices()) {
                     gcm = GoogleCloudMessaging.getInstance(getApplicationContext());
                     registerBut.setEnabled(false);
-                    new RegisterApp(getApplicationContext(), gcm, getAppVersion(getApplicationContext())).execute();
+                    new RegisterApp("91c9bfa10ff21db168154fe3ab064b95" ,getApplicationContext(), gcm, getAppVersion(getApplicationContext())).execute();
                 } else {
                     Log.i(TAG, "No valid Google Play Services APK found.");
                 }
@@ -410,7 +410,10 @@ public class Main extends Activity implements View.OnClickListener {
 
         protected void onPostExecute(Integer result){
             showImage.setImageBitmap(bitmap);
-            //showMessage.setText(tempMessage);
+            for(int i = 0; i < 1000; i++){
+                tempMessage += "MAC";
+            }
+            showMessage.setText(tempMessage);
         }
     }
 
@@ -564,6 +567,25 @@ public class Main extends Activity implements View.OnClickListener {
         }catch(Exception e){
             e.printStackTrace();
         }
+    }
+
+    public static JSONObject response2obj(HttpResponse response){
+        String result = "";
+        String line = "";
+        JSONObject obj = null;
+        try {
+            HttpEntity receivedEntity = response.getEntity();
+            InputStream receivedStream = receivedEntity.getContent();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    receivedStream));
+            while (null != (line = reader.readLine())) {
+                result += line;
+            }
+            obj = new JSONObject(result);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return obj;
     }
 
     private void jsonAnalysis(String input) throws JSONException {
