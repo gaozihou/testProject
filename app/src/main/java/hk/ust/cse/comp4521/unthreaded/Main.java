@@ -6,6 +6,8 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -47,6 +49,10 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -92,6 +98,7 @@ public class Main extends Activity implements View.OnClickListener {
         String status;
         String createdAt;
     }
+    GoogleCloudMessaging gcm;
 
     /**
      * Called when the activity is first created.
@@ -150,6 +157,80 @@ public class Main extends Activity implements View.OnClickListener {
             }
         }
 
+        final Button registerBut = (Button)findViewById(R.id.registerGCM);
+        registerBut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Check device for Play Services APK.
+                if (checkPlayServices()) {
+                    gcm = GoogleCloudMessaging.getInstance(getApplicationContext());
+                    registerBut.setEnabled(false);
+                    new RegisterApp(getApplicationContext(), gcm, getAppVersion(getApplicationContext())).execute();
+                } else {
+                    Log.i(TAG, "No valid Google Play Services APK found.");
+                }
+            }
+        });
+
+        Button pushBut = (Button)findViewById(R.id.pushGCM);
+        pushBut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new AsyncPush().execute(serverurl);
+            }
+        });
+
+    }
+
+    public class AsyncPush extends AsyncTask<String, Void, Integer> {
+
+        @Override
+        protected Integer doInBackground(String... params) {
+            NameValuePair pair1 = new BasicNameValuePair("message", "Hello World!!!");
+            List<NameValuePair> pairList = new ArrayList<NameValuePair>();
+            pairList.add(pair1);
+            try {
+                HttpEntity requestHttpEntity = new UrlEncodedFormEntity(pairList);
+                // URL使用基本URL即可，其中不需要加参数
+                HttpPost httpPost = new HttpPost(serverurl + "/pushMessages");
+                // 将请求体内容加入请求中
+                httpPost.setEntity(requestHttpEntity);
+                // 需要客户端对象来发送请求
+                HttpClient httpClient = new DefaultHttpClient();
+                // 发送请求
+                HttpResponse response = httpClient.execute(httpPost);
+                StatusLine a = response.getStatusLine();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    private static int getAppVersion(Context context) {
+        try {
+            PackageInfo packageInfo = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0);
+            return packageInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            // should never happen
+            throw new RuntimeException("Could not get package name: " + e);
+        }
+    }
+
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        9000).show();
+            } else {
+                Log.i(TAG, "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
     }
 
     private void selectImg() {
