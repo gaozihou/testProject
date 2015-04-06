@@ -1,6 +1,7 @@
 package hk.ust.cse.comp4521.unthreaded;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -27,12 +28,12 @@ public class RegisterApp extends AsyncTask<Void, Void, String> {
     GoogleCloudMessaging gcm;
     String SENDER_ID = "163181979124";
     String regid = null;
-    //private int appVersion;
+    private int appVersion;
 
-    public RegisterApp(Context ctx, GoogleCloudMessaging gcm/*, int appVersion*/){
+    public RegisterApp(Context ctx, GoogleCloudMessaging gcm, int appVersion){
         this.ctx = ctx;
         this.gcm = gcm;
-        //this.appVersion = appVersion;
+        this.appVersion = appVersion;
     }
 
     @Override
@@ -83,11 +84,10 @@ public class RegisterApp extends AsyncTask<Void, Void, String> {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("registration_id", regid);
         editor.putInt("appVersion", appVersion);
-        editor.commit();
+        editor.apply();
 
     }
 */
-
     private void sendRegistrationIdToBackend() {
         NameValuePair pair1 = new BasicNameValuePair("regId", regid);
         List<NameValuePair> pairList = new ArrayList<>();
