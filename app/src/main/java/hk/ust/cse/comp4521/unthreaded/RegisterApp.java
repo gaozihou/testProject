@@ -1,7 +1,6 @@
 package hk.ust.cse.comp4521.unthreaded;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -28,12 +27,12 @@ public class RegisterApp extends AsyncTask<Void, Void, String> {
     GoogleCloudMessaging gcm;
     String SENDER_ID = "163181979124";
     String regid = null;
-    private int appVersion;
+    //private int appVersion;
 
-    public RegisterApp(Context ctx, GoogleCloudMessaging gcm, int appVersion){
+    public RegisterApp(Context ctx, GoogleCloudMessaging gcm/*, int appVersion*/){
         this.ctx = ctx;
         this.gcm = gcm;
-        this.appVersion = appVersion;
+        //this.appVersion = appVersion;
     }
 
     @Override
@@ -43,13 +42,12 @@ public class RegisterApp extends AsyncTask<Void, Void, String> {
 
     @Override
     protected String doInBackground(Void... arg0) {
-        String msg = "";
+        String msg = "Device registered, registration ID=" + regid;
         try {
             if (gcm == null) {
                 gcm = GoogleCloudMessaging.getInstance(ctx);
             }
             regid = gcm.register(SENDER_ID);
-            msg = "Device registered, registration ID=" + regid;
 
             // You should send the registration ID to your server over HTTP,
             // so it can use GCM/HTTP or CCS to send messages to your app.
@@ -77,7 +75,7 @@ public class RegisterApp extends AsyncTask<Void, Void, String> {
         }
         return msg;
     }
-
+/*
     private void storeRegistrationId(Context ctx, String regid) {
         final SharedPreferences prefs = ctx.getSharedPreferences(Main.class.getSimpleName(),
                 Context.MODE_PRIVATE);
@@ -88,11 +86,11 @@ public class RegisterApp extends AsyncTask<Void, Void, String> {
         editor.commit();
 
     }
-
+*/
 
     private void sendRegistrationIdToBackend() {
         NameValuePair pair1 = new BasicNameValuePair("regId", regid);
-        List<NameValuePair> pairList = new ArrayList<NameValuePair>();
+        List<NameValuePair> pairList = new ArrayList<>();
         pairList.add(pair1);
         try {
             HttpEntity requestHttpEntity = new UrlEncodedFormEntity(pairList);
