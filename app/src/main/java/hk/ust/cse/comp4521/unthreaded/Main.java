@@ -84,11 +84,10 @@ public class Main extends Activity implements View.OnClickListener {
     private ProgressBar progressBar;
     private TextView statusText;
     private int completed;
-    private WorkerTask worker;
     private TextView showMessage;
     private ImageView showImage;
 
-    private String DATABASE_PATH = "/sdcard/Unthreaded";
+    private String DATABASE_PATH = Environment.getExternalStorageDirectory() + "/Unthreaded";
     private String FILE_PATH = DATABASE_PATH + "/firstFile.txt";
 
     private static final String serverurl = "http://gaozihou.no-ip.org/task_manager/v1";
@@ -318,7 +317,7 @@ public class Main extends Activity implements View.OnClickListener {
         }
         // Reset button is clicked
         else if (source.getId() == R.id.reset_button) {
-            worker.cancel(false);
+            //worker.cancel(false);
             progressBar.setProgress(0);
             statusText.setText(String.format("Click the button"));
             completed = 0;

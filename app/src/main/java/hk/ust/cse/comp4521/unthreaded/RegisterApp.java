@@ -99,7 +99,7 @@ public class RegisterApp extends AsyncTask<Void, Void, String> {
         try {
             HttpEntity requestHttpEntity = new UrlEncodedFormEntity(pairList);
             // URL使用基本URL即可，其中不需要加参数
-            HttpPost httpPost = new HttpPost("http://gaozihou.ddns.net/task_manager/v1/registerGCM");
+            HttpPost httpPost = new HttpPost("http://gaozihou.no-ip.org/task_manager/v1/registerGCM");
             httpPost.addHeader("Authorization",userKey);
             //httpPost.addHeader("Authorization","91c9bfa10ff21db168154fe3ab064b95");
             // 将请求体内容加入请求中
