@@ -74,6 +74,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.xml.transform.Result;
@@ -90,7 +91,7 @@ public class Main extends Activity implements View.OnClickListener {
     private String DATABASE_PATH = "/sdcard/Unthreaded";
     private String FILE_PATH = DATABASE_PATH + "/firstFile.txt";
 
-    private static final String serverurl = "http://gaozihou.ddns.net/task_manager/v1";
+    private static final String serverurl = "http://gaozihou.no-ip.org/task_manager/v1";
     private List<TaskInfo> taskInfoArrayList;
     public class TaskInfo {
         int id;
@@ -263,10 +264,25 @@ public class Main extends Activity implements View.OnClickListener {
             Cursor cursor = getContentResolver().query(uri, null,
                     null, null, null);
             cursor.moveToFirst();
-            originalPath = cursor.getString(1);
+            String originalPath = cursor.getString(1);
             cursor.close();
+            showMessage.setText(originalPath + "/n" + originalPath.substring(0,19));
 
-            showMessage.setText(originalPath);
+            if(originalPath.length() < 20){
+                Toast.makeText(this, "Invalid image, please select again!", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if(!originalPath.substring(0,20).equals("/storage/emulated/0/")){
+                Toast.makeText(this, "Invalid image, please select again!", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (isOnline()) {
+                new AsyncUploadImage().execute(originalPath);
+                //new AsyncDownloadImage().execute("1428400069349.bmp");
+            }else{
+                Toast.makeText(this, getString(R.string.notOnline), Toast.LENGTH_LONG).show();
+                return;
+            }
             Log.i("uri",uri.toString());
             Log.i("uri",originalPath);
         }
@@ -289,11 +305,14 @@ public class Main extends Activity implements View.OnClickListener {
     public void onClick(View source) {
         // Start button is clicked
         if (source.getId() == R.id.start_button) {
+            new AsyncCreateTaskImage().execute(6);
+            /*
             if(worker != null){
                 worker.cancel(false);
             }
             worker = new WorkerTask();
             worker.execute();
+            */
             //Thread workerthread = new Thread(worker);
             //workerthread.start();
         }
@@ -306,7 +325,7 @@ public class Main extends Activity implements View.OnClickListener {
         }
         else if(source.getId() == R.id.upload){
             if (isOnline()) {
-                new AsyncHttpServer().execute(serverurl);
+                new AsyncDownloadImage().execute(imageFileName);
             }else{
                 Toast.makeText(this, getString(R.string.notOnline), Toast.LENGTH_LONG).show();
             }
@@ -399,17 +418,14 @@ public class Main extends Activity implements View.OnClickListener {
                 e.printStackTrace();
             }
 
-            try {
-                uploadByCommonPost();
-                downloadImage();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            //new AsyncUploadImage().execute(0);
+            //uploadByCommonPost();
+            //downloadImage();
             return 0;
         }
 
         protected void onPostExecute(Integer result){
-            showImage.setImageBitmap(bitmap);
+
             for(int i = 0; i < 1000; i++){
                 tempMessage += "MAC";
             }
@@ -418,18 +434,15 @@ public class Main extends Activity implements View.OnClickListener {
     }
 
     private final String TAG = "UploadActivity";
-    private String path = "/sdcard/Unthreaded/temp/11.bmp";
-    private String uploadUrl = serverurl + "/upload";
-    private  String originalPath = "/sdcard/DCIM/Camera/20150403_173722.jpg";
 
-    private void uploadByCommonPost() throws IOException {
+    private int uploadByCommonPost(String path) throws IOException {
 
-        savePic(getimage(originalPath));
+        //savePic(getimage(originalPath), currentTime);
 
         String end = "\r\n";
         String twoHyphens = "--";
         String boundary = "******";
-        URL url = new URL(uploadUrl);
+        URL url = new URL(serverurl + "/upload");
         HttpURLConnection httpURLConnection = (HttpURLConnection) url
                 .openConnection();
         httpURLConnection.setChunkedStreamingMode(128 * 1024);// 128K
@@ -462,23 +475,24 @@ public class Main extends Activity implements View.OnClickListener {
         dos.writeBytes(end);
         dos.writeBytes(twoHyphens + boundary + twoHyphens + end);
         dos.flush();
-        InputStream is = httpURLConnection.getInputStream();
-        InputStreamReader isr = new InputStreamReader(is, "utf-8");
-        BufferedReader br = new BufferedReader(isr);
-        String result = br.readLine();
-        Log.i(TAG, result);
+        int response = httpURLConnection.getResponseCode();
         dos.close();
-        is.close();
+
+        new File(path).delete();
+        return response;
     }
 
-    public  void savePic(Bitmap b) {
-
+    public String savePic(Bitmap b, String time) {
+        String path = "";
         FileOutputStream fos = null;
         try {
             Log.i(TAG,"start savePic");
 
+
+            path = DATABASE_PATH + "/temp/" + time + ".bmp";
+
 //         String sdpath ="/storage/sdcard1/";
-            File f = new File("/sdcard/Unthreaded/temp" ,"/11.bmp");
+            File f = new File(path);
             if (f.exists()) {
                 f.delete();
             }
@@ -498,30 +512,10 @@ public class Main extends Activity implements View.OnClickListener {
             Log.i(TAG,"IOException");
             e.printStackTrace();
         }
+        return path;
     }
 
-    private Bitmap bitmap=null;
 
-    private void downloadImage(){
-        try{
-            URL url = new URL(serverurl + "/uploads/hhh.bmp");
-            HttpURLConnection conn  = (HttpURLConnection)url.openConnection();
-            conn.setDoInput(true);
-            conn.connect();
-            InputStream inputStream=conn.getInputStream();
-            Log.i("Important::: ", "debug1");
-            bitmap = BitmapFactory.decodeStream(inputStream);
-            //bitmap = comp(bitmap);
-
-            Log.i("Important::: ", "debug2");
-            //Message msg=new Message();
-            //msg.what=1;
-        } catch (MalformedURLException e1) {
-            e1.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     private Bitmap getimage(String srcPath) {
         BitmapFactory.Options newOpts = new BitmapFactory.Options();
@@ -649,5 +643,107 @@ public class Main extends Activity implements View.OnClickListener {
             statusText.setText(String.format("Completed!!!!!"));
         }
     }
+
+    private String imageFileName = "";
+
+    private class AsyncUploadImage extends AsyncTask<String, Void, Integer> {
+
+        private String currentTime = "";
+        protected void onPreExecute(){
+            super.onPreExecute();
+            Calendar c = Calendar.getInstance();
+            currentTime = c.getTimeInMillis()+"";
+            imageFileName = currentTime + ".bmp";
+        }
+
+        @Override
+        protected Integer doInBackground(String... params) {
+            String imagePath = savePic(getimage(params[0]), currentTime);
+            Integer receivedCode = 0;
+            try {
+                receivedCode = uploadByCommonPost(imagePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return receivedCode;
+        }
+
+        protected void onPostExecute(Integer result){
+            super.onPostExecute(result);
+            if(result == 201){
+                Toast.makeText(getApplicationContext(),"Image uploaded successfully!", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(getApplicationContext(),"Upload failed. Please try again!", Toast.LENGTH_SHORT).show();
+                imageFileName = "";
+            }
+
+
+        }
+    }
+
+    private class AsyncDownloadImage extends AsyncTask<String, Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(String... params) {
+            Bitmap bitmap = null;
+                try{
+                    URL url = new URL(serverurl + "/uploads/" + params[0]);
+                    HttpURLConnection conn  = (HttpURLConnection)url.openConnection();
+                    conn.setDoInput(true);
+                    conn.connect();
+                    InputStream inputStream=conn.getInputStream();
+                    bitmap = BitmapFactory.decodeStream(inputStream);
+                } catch (MalformedURLException e1) {
+                    e1.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            return bitmap;
+        }
+
+        protected void onPostExecute(Bitmap result){
+            super.onPostExecute(result);
+            showImage.setImageBitmap(result);
+        }
+    }
+
+    private class AsyncCreateTaskImage extends AsyncTask<Integer, Void, JSONObject> {
+
+        @Override
+        protected JSONObject doInBackground(Integer... params) {
+            JSONObject obj = null;
+            NameValuePair pair1 = new BasicNameValuePair("task_id", params[0]+"");
+            NameValuePair pair2 = new BasicNameValuePair("file_name", imageFileName);
+            List<NameValuePair> pairList = new ArrayList<NameValuePair>();
+            pairList.add(pair1);
+            pairList.add(pair2);
+            try {
+                HttpEntity requestHttpEntity = new UrlEncodedFormEntity(pairList);
+                // URL使用基本URL即可，其中不需要加参数
+                HttpPost httpPost = new HttpPost(serverurl + "/taskImage");
+                // 将请求体内容加入请求中
+                httpPost.setEntity(requestHttpEntity);
+                // 需要客户端对象来发送请求
+                HttpClient httpClient = new DefaultHttpClient();
+                // 发送请求
+                HttpResponse response = httpClient.execute(httpPost);
+                obj = response2obj(response);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return obj;
+        }
+
+        protected void onPostExecute(JSONObject result){
+            super.onPostExecute(result);
+            try {
+                Toast.makeText(getApplicationContext(), result.getString("message"), Toast.LENGTH_SHORT).show();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
 
 }
